@@ -16,7 +16,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $product_all = Product::all();
+        $product_all = Product::paginate(10);
         //Make collection of the resource (ProductCollection is a JsonResource)
         return ProductCollection::collection($product_all);
     }
