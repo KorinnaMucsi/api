@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\Product\ProductCollection;
 use App\Http\Resources\Product\ProductResource;
-use App\Http\Resources\Product\ProductResourceCollection;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
@@ -16,8 +16,9 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $product_all = Product::paginate(10);
-        return new ProductResourceCollection($product_all);
+        $product_all = Product::all();
+        //Make collection of the resource (ProductCollection is a JsonResource)
+        return ProductCollection::collection($product_all);
     }
 
     /**
