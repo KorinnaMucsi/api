@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\ProductNotBelongsToUser;
 use App\Http\Requests\ProductRequest;
 use App\Http\Resources\Product\ProductCollection;
 use App\Http\Resources\Product\ProductResource;
 use App\Models\Product;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
@@ -52,6 +55,7 @@ class ProductController extends Controller
         $product1->price = $request->price;
         $product1->stock = $request->stock;
         $product1->discount = $request->discount;
+        $product1->user_id = $request->user_id;
 
         $product1->save();
 
@@ -89,6 +93,10 @@ class ProductController extends Controller
      */
     public function update(ProductRequest $request, Product $product)
     {
+        //We check if the user has permission to update the product (product belongs to user)
+        //If the user has permission, then the product is updated, else, a ProductNotBelongsToUser
+        //exception is thrown
+        $this->userHasPermission($product);
         $product->update($request->all());
 
         return response(['data'=>new ProductResource($product)], 200);
@@ -102,7 +110,20 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
+        //We check if the user has permission to delete the product (product belongs to user)
+        //If the user has permission, then the product is deleted, else, a ProductNotBelongsToUser
+        //exception is thrown
+        $this->userHasPermission($product);
         $product->delete();
         return response()->json(null, 204);
+    }
+
+    public function userHasPermission($product)
+    {
+        //Created ProductNotBelongsToUser exception (Exceptions\ProductNotBelongsToUser)
+        //to stop the user from updating, deleting the product if he has not permission for it
+        if (Auth::user()->id !== $product->user_id) {
+            throw new ProductNotBelongsToUser();
+        }
     }
 }
