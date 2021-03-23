@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ReviewRequest;
 use App\Http\Resources\ReviewResource;
 use App\Models\Product;
 use App\Models\Review;
@@ -37,9 +38,16 @@ class ReviewController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(ReviewRequest $request, Product $product)
     {
-        //
+        //Save the data to the database
+        $review = $product->reviews()->create([
+            'customer' => $request->customer,
+            'star' => $request->star,
+            'review' => $request->review
+        ]);
+        //return it as JSON
+        return response(['data' => new ReviewResource($review)], 201);
     }
 
     /**
